@@ -1,0 +1,27 @@
+[project]
+name = "cnrhlc"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.3.1",
+    "scipy>=1.16.0",
+    "torch>=2.7.1",
+    "torchaudio>=2.7.1",
+]
+
+[build-system]
+build-backend = "hatchling.build"
+requires = [ "hatchling" ]
+
+[tool.hatch.build.targets.wheel]
+packages = [ "cnrhlc" ]
+
+[tool.ruff]
+lint.extend-select = ["F", "E", "W", "I", "D"]
+lint.ignore = ["D100", "D104"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D"]
