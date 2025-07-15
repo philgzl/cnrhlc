@@ -1,6 +1,6 @@
 # cnrhlc
 
-Code for [Controllable joint noise reduction and hearing loss compensation using a differentiable auditory model]().
+Code for [Controllable joint noise reduction and hearing loss compensation using a differentiable auditory model](https://arxiv.org/abs/2507.09372).
 
 This repository contains the code for:
 - The differentiable auditory model
