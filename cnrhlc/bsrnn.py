@@ -302,6 +302,7 @@ class _Separator(nn.Module):
         if self.mlp_res:
             res = []
             for i in range(K):
+                x = input[:, :, i, :]
                 subres = self.mlp_res[i](x)
                 subres = subres.reshape(B, 2, self.output_channels, -1, T)
                 res.append(subres)
