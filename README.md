@@ -16,7 +16,7 @@ Cite as:
   title = {Controllable joint noise reduction and hearing loss compensation using a differentiable auditory model},
   author = {Gonzalez, Philippe and Dau, Torsten and May, Tobias},
   booktitle = {Proc. Clarity},
-  pages = {1--4},
+  pages = {1--5},
   year = {2025},
 }
 ```
