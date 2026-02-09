@@ -17,6 +17,7 @@ requires = [ "hatchling" ]
 packages = [ "cnrhlc" ]
 
 [tool.ruff]
+line-length = 120
 lint.extend-select = ["F", "E", "W", "I", "D"]
 lint.ignore = ["D100", "D104"]
 

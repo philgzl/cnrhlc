@@ -111,8 +111,8 @@ class AuditoryModel(nn.Module):
         x : torch.Tensor
             Input signal. Shape ``(batch_size, ..., time)``.
         audiogram : torch.Tensor
-            Audiogram. Shape ``(batch_size, n_thresholds, 2)``. First column is
-            frequency in Hz, second column is hearing loss in dB.
+            Audiogram. Shape ``(batch_size, n_thresholds, 2)``. First column is frequency in Hz, second column is
+            hearing loss in dB.
 
         Returns
         -------
@@ -124,23 +124,17 @@ class AuditoryModel(nn.Module):
             ohc_loss, ihc_loss = None, None
         else:
             if audiogram.shape[-1] != 2:
-                raise ValueError(
-                    "audiogram dimension along last axis must be 2, "
-                    f"got {audiogram.shape}"
-                )
+                raise ValueError(f"audiogram dimension along last axis must be 2, got {audiogram.shape}")
             if x.ndim == 1 and audiogram.ndim != 2:
                 raise ValueError(
-                    "audiogram must be 2D for 1D input, "
-                    f"got {audiogram.shape} audiogram and {x.shape} input"
+                    f"audiogram must be 2D for 1D input, got {audiogram.shape} audiogram and {x.shape} input"
                 )
             if x.ndim > 1 and (audiogram.ndim != 3 or audiogram.shape[0] != x.shape[0]):
                 raise ValueError(
-                    "audiogram must be 3D with same batch size as input for batched "
-                    f"inputs, got {audiogram.shape} audiogram and {x.shape} input"
+                    f"audiogram must be 3D with same batch size as input for batched inputs, got {audiogram.shape} "
+                    f"audiogram and {x.shape} input"
                 )
-            ohc_loss, ihc_loss = audiogram_to_ohc_ihc_loss(
-                audiogram, freqs=self.filterbank.fc
-            )
+            ohc_loss, ihc_loss = audiogram_to_ohc_ihc_loss(audiogram, freqs=self.filterbank.fc)
         x = self.filterbank(x, ohc_loss=ohc_loss)
         x = self.ihc(x)
         if ihc_loss is not None:
@@ -250,11 +244,11 @@ def audiogram_to_ohc_ihc_loss(audiogram, freqs=None):
     Parameters
     ----------
     audiogram : torch.Tensor
-        Audiogram. Shape ``(batch_size, n_thresholds, 2)``. First column is frequency in
-        Hz, second column is hearing loss in dB.
+        Audiogram. Shape ``(batch_size, n_thresholds, 2)``. First column is frequency in Hz, second column is hearing
+        loss in dB.
     freqs : torch.Tensor, optional
-        Frequencies to interpolate the audiogram at. Shape ``(batch_size, n_freqs)``
-        or ``(n_freqs,)``. If ``None``, uses the input audiogram frequencies.
+        Frequencies to interpolate the audiogram at. Shape ``(batch_size, n_freqs)`` or ``(n_freqs,)``. If ``None``,
+        uses the input audiogram frequencies.
 
     Returns
     -------
@@ -286,9 +280,9 @@ def audiogram_to_ohc_ihc_loss(audiogram, freqs=None):
         max_ohc_loss = linear_interpolation(
             torch.log10(freqs), torch.log10(max_ohc_loss[:, 0]), max_ohc_loss[:, 1]
         ).clamp(0, 105)
-        total_loss = linear_interpolation(
-            torch.log10(freqs), torch.log10(audiogram[..., 0]), audiogram[..., 1]
-        ).clamp(0, 105)
+        total_loss = linear_interpolation(torch.log10(freqs), torch.log10(audiogram[..., 0]), audiogram[..., 1]).clamp(
+            0, 105
+        )
     # 2/3 OHC loss and 1/3 IHC loss
     ohc_loss = torch.clamp(2 / 3 * total_loss, max=max_ohc_loss)
     ihc_loss = total_loss - ohc_loss

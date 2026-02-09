@@ -4,9 +4,8 @@ import torch
 class Registry:
     """Registry for classes and functions.
 
-    Helper class to register classes and functions in a registry. To register a class or
-    a function to an instance of :class:`Registry`, use the :meth:`register` method as a
-    decorator.
+    Helper class to register classes and functions in a registry. To register a class or a function to an instance of
+    :class:`Registry`, use the :meth:`register` method as a decorator.
 
     Usage
     -----

@@ -36,9 +36,8 @@ Members of this registry are:
 class BaseLoss(nn.Module):
     """Base class for all losses.
 
-    Losses are always computed along the last dimension of the input tensors. If there
-    are remaining dimensions other that the batch dimension after reducing the last
-    dimension, then these are reduced by taking the mean.
+    Losses are always computed along the last dimension of the input tensors. If there are remaining dimensions other
+    that the batch dimension after reducing the last dimension, then these are reduced by taking the mean.
 
     Subclasses must implement the :meth:`compute` method.
 
@@ -130,9 +129,7 @@ class PNormLoss(BaseLoss):
 
     @override
     def compute(self, x, y, lengths, weight=None, audiogram=None):
-        assert (
-            audiogram is None
-        ), f"audiogram argument not supported for {self.__class__.__name__} loss"
+        assert audiogram is None, f"audiogram argument not supported for {self.__class__.__name__} loss"
         x, y = apply_mask(x, y, lengths=lengths)
         loss = (x - y).abs().pow(self.order).sum(-1)
         if self.norm:
@@ -177,17 +174,13 @@ class AuditoryLoss(BaseLoss):
     Parameters
     ----------
     am_kw : dict, optional
-        Keyword arguments for the auditory model. See
-        :class:`~.auditory.AuditoryModel`
+        Keyword arguments for the auditory model. See :class:`~.auditory.AuditoryModel`.
     am_kw_hi : dict, optional
-        Keyword arguments for the hearing impaired auditory model. If ``None``, defaults
-        to ``am_kw``.
+        Keyword arguments for the hearing impaired auditory model. If ``None``, defaults to ``am_kw``.
     am_kw_nh : dict, optional
-        Keyword arguments for the normal hearing auditory model. If ``None``, defaults
-        to ``am_kw``.
+        Keyword arguments for the normal hearing auditory model. If ``None``, defaults to ``am_kw``.
     loss : str, optional
-        Loss function between the auditory model outputs. Must be a member of
-        :data:`LossRegistry`.
+        Loss function between the auditory model outputs. Must be a member of :data:`LossRegistry`.
     loss_kw : dict, optional
         Keyword arguments for the loss function.
 
@@ -220,23 +213,18 @@ class ControllableNoiseReductionHearingLossCompensationLoss(BaseLoss):
     Parameters
     ----------
     am_kw : dict, optional
-        Keyword arguments for the auditory model. See
-        :class:`~.auditory.AuditoryModel`
+        Keyword arguments for the auditory model. See :class:`~.auditory.AuditoryModel`.
     am_kw_hi : dict, optional
-        Keyword arguments for the hearing impaired auditory model. If ``None``, defaults
-        to ``am_kw``.
+        Keyword arguments for the hearing impaired auditory model. If ``None``, defaults to ``am_kw``.
     am_kw_nh : dict, optional
-        Keyword arguments for the normal hearing auditory model. If ``None``, defaults
-        to ``am_kw``.
+        Keyword arguments for the normal hearing auditory model. If ``None``, defaults to ``am_kw``.
     loss : str, optional
-        Loss function between the auditory model outputs. Must be a member of
-        :data:`LossRegistry`.
+        Loss function between the auditory model outputs. Must be a member of :data:`LossRegistry`.
     loss_kw : dict, optional
         Keyword arguments for the loss function.
     nh_denoising : bool, optional
-        If ``True``, the noise reduction loss term is computed from the normal hearing
-        representation of the clean and processed signals. Else, it is computed from
-        their hearing impaired representation.
+        If ``True``, the noise reduction loss term is computed from the normal hearing representation of the clean and
+        processed signals. Else, it is computed from their hearing impaired representation.
 
     """
 

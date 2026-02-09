@@ -81,9 +81,8 @@ def aud_filt_bw(fc):
 def fir2(order, freq, amp):
     """FIR filter design.
 
-    Same as ``fir2.m`` in the Signal Processing Toolbox. ``fir2.m`` uses an
-    interpolation method that is not equivalent to :func:`numpy.interp` used inside
-    :func:`scipy.signal.firwin2`.
+    Same as ``fir2.m`` in the Signal Processing Toolbox. ``fir2.m`` uses an interpolation method that is not equivalent
+    to :func:`numpy.interp` used inside :func:`scipy.signal.firwin2`.
 
     Parameters
     ----------
@@ -181,8 +180,7 @@ def middle_ear_filter(fs, order=512, min_phase=True):
 def butter(order, fc, **kwargs):
     """Butterworth filter design.
 
-    A wrapper around :func:`scipy.signal.butter` with support for multiple cutoff
-    frequencies.
+    A wrapper around :func:`scipy.signal.butter` with support for multiple cutoff frequencies.
 
     Parameters
     ----------
@@ -216,9 +214,7 @@ def butter(order, fc, **kwargs):
     return b, a
 
 
-def matched_z_transform(
-    poles, zeros=None, fs=1.0, gain=None, f0db=None, complex=False, _z_zeros=None
-):
+def matched_z_transform(poles, zeros=None, fs=1.0, gain=None, f0db=None, complex=False, _z_zeros=None):
     """Analog to digital filter using the matched Z-transform method.
 
     See https://en.wikipedia.org/wiki/Matched_Z-transform_method.
@@ -228,32 +224,26 @@ def matched_z_transform(
     poles : list or numpy.ndarray
         Poles in the s-plane. Shape ``(n_poles,)`` or ``(n_filters, n_poles)``.
     zeros : list or numpy.ndarray, optional
-        Zeros in the s-plane. Shape ``(n_zeros,)`` or ``(n_filters, n_zeros)``. If
-        ``None``, the filter is all-pole.
+        Zeros in the s-plane. Shape ``(n_zeros,)`` or ``(n_filters, n_zeros)``. If ``None``, the filter is all-pole.
     fs : float, optional
         Sampling frequency.
     gain : float or list or numpy.ndarray, optional
-        Continuous filter gain. If :class:`numpy.ndarray`, must have shape
-        ``(n_filters,)``. If ``None`` and ``f0db`` is also ``None``, no gain is applied
-        and the first coefficient in ``b`` is ``1.0``.
+        Continuous filter gain. If :class:`numpy.ndarray`, must have shape ``(n_filters,)``. If ``None`` and ``f0db`` is
+        also ``None``, no gain is applied and the first coefficient in ``b`` is ``1.0``.
     f0db : float, optional
-        Frequency at which the filter should have unit gain.  If ``None`` and ``gain``
-        is also ``None``, no gain is applied and the first coefficient in ``b`` is
-        ``1.0``.
+        Frequency at which the filter should have unit gain.  If ``None`` and ``gain`` is also ``None``, no gain is
+        applied and the first coefficient in ``b`` is ``1.0``.
     complex : bool, optional
-        If ``False``, the imaginary part of the filter coefficients is discarded and the
-        output is real. This is usually desired if the poles and zeros are conjugate,
-        since the imaginary part should be zero and the filter can be implemented in the
-        real domain. If ``True``, the output coefficients are complex.
+        If ``False``, the imaginary part of the filter coefficients is discarded and the output is real. This is usually
+        desired if the poles and zeros are conjugate, since the imaginary part should be zero and the filter can be
+        implemented in the real domain. If ``True``, the output coefficients are complex.
 
     Returns
     -------
     b : numpy.ndarray
-        Numerator coefficients. Shape ``(n_filters, n_zeros + 1)`` or
-        ``(n_zeros + 1,)``.
+        Numerator coefficients. Shape ``(n_filters, n_zeros + 1)`` or ``(n_zeros + 1,)``.
     a : numpy.ndarray
-        Denominator coefficients. Shape ``(n_filters, n_poles + 1)`` or
-        ``(n_poles + 1,)``.
+        Denominator coefficients. Shape ``(n_filters, n_poles + 1)`` or ``(n_poles + 1,)``.
 
     """
     poles, poles_was_1d = _check_1d_or_2d(poles, "poles")
@@ -302,10 +292,7 @@ def matched_z_transform(
     elif f0db is not None:
         f0db, _ = _check_0d_or_1d(f0db)
         z_f0db = np.exp(-1j * 2 * np.pi * f0db / fs)
-        z_gain = np.abs(
-            np.prod(1 - z_poles * z_f0db[:, None], axis=1)
-            / np.prod(1 - z_zeros * z_f0db[:, None], axis=1)
-        )
+        z_gain = np.abs(np.prod(1 - z_poles * z_f0db[:, None], axis=1) / np.prod(1 - z_zeros * z_f0db[:, None], axis=1))
         b = z_gain[:, None] * b
 
     if both_1d:
@@ -335,59 +322,50 @@ def gammatone(
     order : int, optional
         Filter order.
     bw_mult : float or numpy.ndarray, optional
-        Bandwidth scaling factor. If :class:`numpy.ndarray`, must have shape
-        ``(n_filters,)``. If ``None``, the formula from [1] is used.
+        Bandwidth scaling factor. If :class:`numpy.ndarray`, must have shape ``(n_filters,)``. If ``None``, the formula
+        from [1] is used.
     filter_type : str, optional
         Filter type:
 
-        - ``"fir"``: A FIR filter is created by evaluating the time-domain expression of
-          the gammatone filter over a finite window. The number of taps is
-          ``fir_ntaps``.
-        - ``"gtf"``: Accurate IIR equivalent by numerically calculating the s-plane
-          zeros.
+        - ``"fir"``: A FIR filter is created by evaluating the time-domain expression of the gammatone filter over a
+          finite window. The number of taps is ``fir_ntaps``.
+        - ``"gtf"``: Accurate IIR equivalent by numerically calculating the s-plane zeros.
         - ``"apgf"``: All-pole approximation from [2].
-        - ``"ozgf"``: One-zero approximation from [2]. The zero is set to 0 which
-          matches the DAPGF denomination in more recent papers by Lyon.
+        - ``"ozgf"``: One-zero approximation from [2]. The zero is set to 0 which matches the DAPGF denomination in more
+          recent papers by Lyon.
         - ``"hohmann"``: Complex-valued all-pole filter as in [3].
-        - ``"amt_classic"``: Mixed pole-zero approximation from [?]. Matches the
-          ``'classic'`` option in the AMT.
-        - ``"amt_allpole"``: Same as ``"apgf"`` but uses a different scaling. Matches
-          the ``'allpole'`` option in the AMT.
+        - ``"amt_classic"``: Mixed pole-zero approximation from [?]. Matches the ``'classic'`` option in the AMT.
+        - ``"amt_allpole"``: Same as ``"apgf"`` but uses a different scaling. Matches the ``'allpole'`` option in the
+          AMT.
     fir_ntaps : int, optional
         Number of taps for the FIR filter. Ignored if ``filter_type != "fir"``.
     fir_dur : float, optional
-        Duration of FIR in seconds. Ignored if ``filter_type != "fir"``. Specify either
-        ``fir_ntaps`` or ``fir_dur``, not both.
+        Duration of FIR in seconds. Ignored if ``filter_type != "fir"``. Specify either ``fir_ntaps`` or ``fir_dur``,
+        not both.
     iir_output : {"ba", "sos"}, optional
-        Output format for IIR filters. Either a sequence of ``b`` and ``a`` coefficients
-        (``"ba"``), or a sequence of second-order sections (``"sos"``). For stability,
-        ``"sos"`` is recommended, but is computationally more expensive. Ignored if
-        ``filter_type == "fir"``.
+        Output format for IIR filters. Either a sequence of ``b`` and ``a`` coefficients (``"ba"``), or a sequence of
+        second-order sections (``"sos"``). For stability, ``"sos"`` is recommended, but is computationally more
+        expensive. Ignored if ``filter_type == "fir"``.
     compensate_delay : bool, optional
         Whether to compensate for the delay introduced by the filters.
 
     Returns
     -------
     fir : numpy.ndarray
-        FIR filter coefficients. Shape ``(n_taps,)`` or ``(n_filters, n_taps)``. Only
-        returned if ``filter_type == "fir"``.
+        FIR filter coefficients. Shape ``(n_taps,)`` or ``(n_filters, n_taps)``. Only returned if
+        ``filter_type == "fir"``.
     b, a : numpy.ndarray, numpy.ndarray
-        Numerator and denominator coefficients. Shape ``(n_taps,)`` or
-        ``(n_filters, n_taps)``. Only returned if ``filter_type != "fir"`` and
-        ``iir_output == "ba"``.
+        Numerator and denominator coefficients. Shape ``(n_taps,)`` or ``(n_filters, n_taps)``. Only returned if
+        ``filter_type != "fir"`` and ``iir_output == "ba"``.
     sos : numpy.ndarray
-        Second-order sections. Shape ``(order, 6)`` or ``(n_filters, order, 6)``. Only
-        returned if ``filter_type != "fir"`` and ``iir_output == "sos"``.
+        Second-order sections. Shape ``(order, 6)`` or ``(n_filters, order, 6)``. Only returned if
+        ``filter_type != "fir"`` and ``iir_output == "sos"``.
 
-
-    .. [1] J. Holdsworth, I. Nimmo-Smith, R. D. Patterson and P. Rice, "Annex C of the
-       SVOS final report: Implementing a gammatone filter bank", Annex C of APU report
-       2341, 1988.
-    .. [2] R. F. Lyon, "The all-pole gammatone filter and auditory models", in Proc.
-       Forum Acusticum, 1996.
-    .. [3] V. Hohmann, "Frequency analysis and synthesis using a Gammatone filterbank",
-       in Acta Acust. United Acous., 2002.
-
+    .. [1] J. Holdsworth, I. Nimmo-Smith, R. D. Patterson and P. Rice, "Annex C of the SVOS final report: Implementing a
+       gammatone filter bank", Annex C of APU report 2341, 1988.
+    .. [2] R. F. Lyon, "The all-pole gammatone filter and auditory models", in Proc. Forum Acusticum, 1996.
+    .. [3] V. Hohmann, "Frequency analysis and synthesis using a Gammatone filterbank", in Acta Acust. United Acous.,
+       2002.
     """
     fc, scalar_input = _check_0d_or_1d(fc, "fc")
 
@@ -404,12 +382,7 @@ def gammatone(
         if fir_ntaps is None:
             fir_ntaps = int(fir_dur * fs)
         t = np.arange(fir_ntaps) / fs
-        a = (
-            2
-            / math.factorial(order - 1)
-            / np.abs(1 / bw**order + 1 / (bw + 2j * wc) ** order)
-            / fs
-        )
+        a = 2 / math.factorial(order - 1) / np.abs(1 / bw**order + 1 / (bw + 2j * wc) ** order) / fs
         phi = (order - 1) / bw * wc if compensate_delay else np.zeros_like(fc)
         fir = (
             a[:, None]
@@ -438,10 +411,9 @@ def gammatone(
         elif filter_type == "ozgf":
             zeros = np.zeros((len(fc), 1))
         elif filter_type in ["amt_classic", "amt_allpole"]:
-            # The MATLAB code sets the Z-domain zeros to the real part of the Z-domain
-            # poles, which is wrong! Moreover, those zeros are used for calculating the
-            # gain for both classic and allpole, which is probably why a warning is
-            # raised about the scaling being wrong for allpole!
+            # The MATLAB code sets the Z-domain zeros to the real part of the Z-domain poles, which is wrong! Moreover,
+            # those zeros are used for calculating the gain for both classic and allpole, which is probably why a
+            # warning is raised about the scaling being wrong for allpole!
             _z_zeros = np.stack(order * [np.exp((pole) / fs).real], axis=1)
         elif filter_type == "hohmann":
             # override poles and complex
@@ -451,8 +423,8 @@ def gammatone(
             raise ValueError(f"invalid filter_type, got {filter_type}")
         if iir_output == "ba":
             warnings.warn(
-                "Using iir_output='ba' can lead to numerically unstable gammatone "
-                "filters. Consider using filter_type='fir' or iir_output='sos' instead."
+                "Using iir_output='ba' can lead to numerically unstable gammatone filters. Consider using "
+                "filter_type='fir' or iir_output='sos' instead."
             )
             poles = np.tile(poles, (1, order))
             b, a = matched_z_transform(
@@ -471,9 +443,7 @@ def gammatone(
             for i in range(order):
                 zeros_i = None if zeros is None else zeros[:, i : i + 1]
                 _z_zeros_i = None if _z_zeros is None else _z_zeros[:, i : i + 1]
-                b, a = matched_z_transform(
-                    poles, zeros_i, fs=fs, f0db=fc, complex=complex, _z_zeros=_z_zeros_i
-                )
+                b, a = matched_z_transform(poles, zeros_i, fs=fs, f0db=fc, complex=complex, _z_zeros=_z_zeros_i)
                 if filter_type == "amt_allpole":
                     b = b[:, :1]
                 b = np.hstack([b, np.zeros((len(fc), 3 - b.shape[-1]))])
@@ -505,16 +475,12 @@ class FIRFilterbank(nn.Module):
     def __init__(self, fir, dtype=torch.float32):
         super().__init__()
         if not isinstance(fir, (list, np.ndarray, torch.Tensor)):
-            raise TypeError(
-                "fir must be list, np.ndarray or torch.Tensor, got "
-                f"{fir.__class__.__name__}"
-            )
+            raise TypeError(f"fir must be list, np.ndarray or torch.Tensor, got {fir.__class__.__name__}")
         if isinstance(fir, (list, np.ndarray)):
             fir = torch.tensor(fir, dtype=dtype)
         if fir.ndim not in [1, 2]:
             raise ValueError(
-                "fir must be one- or two-dimensional with shape (n_taps,) or "
-                f"(n_filters, n_taps), got shape {fir.shape}"
+                f"fir must be one- or 2-dimensional with shape (n_taps,) or (n_filters, n_taps), got shape {fir.shape}"
             )
         self.register_buffer("fir", fir)
 
@@ -528,8 +494,8 @@ class FIRFilterbank(nn.Module):
         axis : int, optional
             Axis along which to filter.
         batching : bool, optional
-            If ``True``, the input is assumed to have shape ``(..., n_filters, time)``
-            and each channel is filtered with its own filter.
+            If ``True``, the input is assumed to have shape ``(..., n_filters, time)`` and each channel is filtered with
+            its own filter.
 
         Returns
         -------
@@ -561,11 +527,11 @@ class IIRFilterbank(nn.Module):
     Parameters
     ----------
     b : list or numpy.ndarray or torch.Tensor
-        Numerator coefficients. Shape ``(n_taps,)`` or ``(n_filters, n_taps)``. If
-        shorter than ``a`` along the last axis, it is padded with zeros.
+        Numerator coefficients. Shape ``(n_taps,)`` or ``(n_filters, n_taps)``. If shorter than ``a`` along the last
+        axis, it is padded with zeros.
     a : list or numpy.ndarray or torch.Tensor
-        Denominator coefficients. Shape ``(n_taps,)`` or ``(n_filters, n_taps)``. If
-        shorter than ``b`` along the last axis, it is padded with zeros.
+        Denominator coefficients. Shape ``(n_taps,)`` or ``(n_filters, n_taps)``. If shorter than ``b`` along the last
+        axis, it is padded with zeros.
     dtype : torch.dtype, optional
         Data type to cast ``a`` and ``b`` to in case they are not ``torch.Tensor``.
 
@@ -573,12 +539,10 @@ class IIRFilterbank(nn.Module):
 
     def __init__(self, b, a, dtype=torch.float32):
         super().__init__()
-        if not isinstance(b, (list, np.ndarray, torch.Tensor)) or not isinstance(
-            a, (list, np.ndarray, torch.Tensor)
-        ):
+        if not isinstance(b, (list, np.ndarray, torch.Tensor)) or not isinstance(a, (list, np.ndarray, torch.Tensor)):
             raise TypeError(
-                "b and a must be list, np.ndarray or torch.Tensor, got "
-                f"{b.__class__.__name__} and {a.__class__.__name__}"
+                f"b and a must be list, np.ndarray or torch.Tensor, got {b.__class__.__name__} and "
+                f"{a.__class__.__name__}"
             )
         if isinstance(b, (list, np.ndarray)):
             b = torch.tensor(b, dtype=dtype)
@@ -591,8 +555,8 @@ class IIRFilterbank(nn.Module):
                 a = F.pad(a, (0, b.shape[-1] - a.shape[-1]))
         if b.shape != a.shape or b.ndim not in [1, 2]:
             raise ValueError(
-                "b and a must have the same one- or two-dimensional shape (n_taps,) or "
-                f"(n_filters, n_taps), got shapes {b.shape} and {a.shape}"
+                "b and a must have the same one- or two-dimensional shape (n_taps,) or (n_filters, n_taps), got shapes "
+                f"{b.shape} and {a.shape}"
             )
         self.register_buffer("b", b)
         self.register_buffer("a", a)
@@ -607,8 +571,8 @@ class IIRFilterbank(nn.Module):
         axis : int, optional
             Axis along which to filter.
         batching : bool, optional
-            If ``True``, the input is assumed to have shape ``(..., n_filters, time)``
-            and each channel is filtered with its own filter.
+            If ``True``, the input is assumed to have shape ``(..., n_filters, time)`` and each channel is filtered with
+            its own filter.
 
         Returns
         -------
@@ -652,8 +616,8 @@ class GammatoneFilterbank(nn.Module):
     n_filters : int, optional
         Number of filters. Ignored if ``fc`` is not ``None``.
     fc : float or list or numpy.ndarray
-        Center frequencies. If ``None``, a sequence of evenly-spaced frequencies on a
-        ERB-number scale is calculated using ``f_min``, ``f_max`` and ``n_filters``.
+        Center frequencies. If ``None``, a sequence of evenly-spaced frequencies on a ERB-number scale is calculated
+        using ``f_min``, ``f_max`` and ``n_filters``.
     order : int, optional
         Filter order.
     bw_mult : float or numpy.ndarray, optional
@@ -663,22 +627,19 @@ class GammatoneFilterbank(nn.Module):
     fir_ntaps : int, optional
         Number of taps for the FIR filter. Ignored if ``filter_type != "fir"``.
     fir_dur : float, optional
-        Duration of FIR in seconds. Ignored if ``filter_type != "fir"``. Specify either
-        ``fir_ntaps`` or ``fir_dur``, not both.
+        Duration of FIR in seconds. Ignored if ``filter_type != "fir"``. Specify either ``fir_ntaps`` or ``fir_dur``,
+        not both.
     iir_output : {"ba", "sos"}, optional
         Output format for IIR filters. See :func:`gammatone` for details.
     gain : float or list or numpy.ndarray, optional
-        Gain. If :class:`numpy.ndarray`, must have shape ``(n_filters,)``. If ``None``,
-        no gain is applied.
+        Gain. If :class:`numpy.ndarray`, must have shape ``(n_filters,)``. If ``None``, no gain is applied.
     precision : {"single", "double"}, optional
-        Filter coefficient precision. If ``"double"``, the filter coefficients are
-        less likely to be unstable, especially if ``iir_output == "ba"``.
+        Filter coefficient precision. If ``"double"``, the filter coefficients are less likely to be unstable,
+        especially if ``iir_output == "ba"``.
     compensate_delay : bool, optional
-        Whether to compensate for the delay introduced by the filters. The phase delay
-        compensation is only supported by the FIR filter type and is applied directly
-        to the filter coefficients (it thus has an effect during analysis). The group
-        delay compensation is supported for all filter types and is applied during
-        synthesis.
+        Whether to compensate for the delay introduced by the filters. The phase delay compensation is only supported by
+        the FIR filter type and is applied directly to the filter coefficients (it thus has an effect during analysis).
+        The group delay compensation is supported for all filter types and is applied during synthesis.
 
     """
 
@@ -727,10 +688,7 @@ class GammatoneFilterbank(nn.Module):
             fbs = [IIRFilterbank(*coeffs, dtype=dtype)]
         else:
             coeffs = coeffs.reshape(-1, coeffs.shape[-2], 6)
-            fbs = [
-                IIRFilterbank(coeffs[:, i, :3], coeffs[:, i, 3:], dtype=dtype)
-                for i in range(coeffs.shape[1])
-            ]
+            fbs = [IIRFilterbank(coeffs[:, i, :3], coeffs[:, i, 3:], dtype=dtype) for i in range(coeffs.shape[1])]
         self._fbs = nn.ModuleList(fbs)
         self.fs = fs
         self.order = order
@@ -742,10 +700,7 @@ class GammatoneFilterbank(nn.Module):
         if gain is not None:
             gain, _ = _check_0d_or_1d(gain, "gain")
             if len(gain) > 1 and len(gain) != len(fc):
-                raise ValueError(
-                    "gain must have length equal to number of filters, "
-                    f"got {len(gain)} and {len(fc)}"
-                )
+                raise ValueError(f"gain must have length equal to number of filters, got {len(gain)} and {len(fc)}")
             gain = 10 ** (gain / 20)
             gain = torch.tensor(gain, dtype=dtype)
             self.register_buffer("gain", gain)
@@ -762,8 +717,8 @@ class GammatoneFilterbank(nn.Module):
         axis : int, optional
             Axis along which to filter.
         batching : bool, optional
-            If ``True``, the input is assumed to have shape ``(batch_size, ...,
-            n_filters, time)`` and each channel is filtered with its own filter.
+            If ``True``, the input is assumed to have shape ``(batch_size, ..., n_filters, time)`` and each channel is
+            filtered with its own filter.
         ohc_loss : torch.Tensor, optional
             Outer hair cell loss in [0, 1]. Shape ``(batch_size, n_filters)``.
 
@@ -784,8 +739,8 @@ class GammatoneFilterbank(nn.Module):
     def inverse(self, x, _return_delayed=False):
         """Inverse filterbank.
 
-        If ``compensate_delay`` is ``True``, the input filtered signals are delayed
-        to align the envelope peaks before summation.
+        If ``compensate_delay`` is ``True``, the input filtered signals are delayed to align the envelope peaks before
+        summation.
 
         Parameters
         ----------
@@ -799,8 +754,7 @@ class GammatoneFilterbank(nn.Module):
         inv : torch.Tensor
             Reconstructed signal.
         _delayed : torch.Tensor
-            Delayed signals before summation. Returned only if ``_return_delayed`` is
-            ``True``.
+            Delayed signals before summation. Returned only if ``_return_delayed`` is ``True``.
 
         """
         if self.compensate_delay:
@@ -812,12 +766,7 @@ class GammatoneFilterbank(nn.Module):
             envelope_peak = (self.order - 1) / bw
             padding = (envelope_peak.max() - envelope_peak) * self.fs
             padding = padding.round().astype(int)
-            x = torch.stack(
-                [
-                    F.pad(x[..., i, : x.shape[-1] - pad], (pad, 0))
-                    for i, pad in enumerate(padding)
-                ]
-            )
+            x = torch.stack([F.pad(x[..., i, : x.shape[-1] - pad], (pad, 0)) for i, pad in enumerate(padding)])
             _delayed = x.moveaxis(0, -2)
         else:
             _delayed = x
@@ -831,8 +780,7 @@ class DRNLFilterbank(nn.Module):
 
     Proposed in [1]. Same as ``lopezpoveda2001.m`` in the AMT.
 
-    .. [1] E. Lopez-Poveda and R. Meddis, "A human nonlinear cochlear filterbank", in J.
-       Acoust. Soc. Am., 2001.
+    .. [1] E. Lopez-Poveda and R. Meddis, "A human nonlinear cochlear filterbank", in J. Acoust. Soc. Am., 2001.
     """
 
     def __init__(
@@ -1009,13 +957,12 @@ class DRNLFilterbank(nn.Module):
         if ohc_loss is not None:
             if x.ndim == 1 and ohc_loss.ndim != 1:
                 raise ValueError(
-                    "ohc_loss must be 1D for 1D input",
-                    f"got {ohc_loss.shape} ohc_loss and {x.shape} input",
+                    f"ohc_loss must be 1D for 1D input, got {ohc_loss.shape} ohc_loss and {x.shape} input",
                 )
             if x.ndim > 1 and (ohc_loss.ndim != 2 or ohc_loss.shape[0] != x.shape[0]):
                 raise ValueError(
-                    "ohc_loss must be 2D with same batch size as input for batched "
-                    f"inputs, got {ohc_loss.shape} ohc_loss and {x.shape} input"
+                    f"ohc_loss must be 2D with same batch size as input for batched inputs, got {ohc_loss.shape} "
+                    f"ohc_loss and {x.shape} input"
                 )
 
         unbatched = x.ndim == 1
@@ -1061,8 +1008,7 @@ class DRNLFilterbank(nn.Module):
 class NoFilterbank(nn.Module):
     """Identity filterbank.
 
-    This filterbank does not perform any filtering and is useful for disabling the
-    filtering step in a pipeline.
+    This filterbank does not perform any filtering and is useful for disabling the filtering step in a pipeline.
     """
 
     def __init__(self, *args, **kwargs):
@@ -1140,9 +1086,7 @@ def data_lopezpoveda2001():
 
 def _check_1d_or_2d(x, name="input"):
     if not isinstance(x, (list, np.ndarray)):
-        raise TypeError(
-            f"{name} must be list or np.ndarray, got {x.__class__.__name__}"
-        )
+        raise TypeError(f"{name} must be list or np.ndarray, got {x.__class__.__name__}")
     if isinstance(x, list):
         x = np.array(x)
     is_1d = x.ndim == 1
@@ -1154,19 +1098,13 @@ def _check_1d_or_2d(x, name="input"):
 
 
 def _check_0d_or_1d(x, name="input"):
-    is_0d = (
-        isinstance(x, (int, float, np.integer, np.floating))
-        or isinstance(x, np.ndarray)
-        and x.ndim == 0
-    )
+    is_0d = isinstance(x, (int, float, np.integer, np.floating)) or isinstance(x, np.ndarray) and x.ndim == 0
     if is_0d:
         x = np.array([x])
     elif isinstance(x, list):
         x = np.array(x)
     elif not isinstance(x, np.ndarray):
-        raise TypeError(
-            f"{name} must be scalar or np.ndarray, got {x.__class__.__name__}"
-        )
+        raise TypeError(f"{name} must be scalar or np.ndarray, got {x.__class__.__name__}")
     if x.ndim != 1:
         raise ValueError(f"{name} must be one-dimensional, got shape {x.shape}")
     return x, is_0d
@@ -1181,12 +1119,9 @@ def _batching_check(x, axis, b):
         raise ValueError("batching requires filter to be two-dimensional")
     if x.shape[-2] != b.shape[-2]:
         raise ValueError(
-            "batching requires input and filter to have the same number of "
-            f"channels, got {x.shape[-2]} and {b.shape[-2]}"
+            f"batching requires input and filter to have same number of channels, got {x.shape[-2]} and {b.shape[-2]}"
         )
 
 
 def _bw_mult_from_order(order):
-    return math.factorial(order - 1) ** 2 / (
-        np.pi * math.factorial(2 * order - 2) * 2 ** (-2 * order + 2)
-    )
+    return math.factorial(order - 1) ** 2 / (np.pi * math.factorial(2 * order - 2) * 2 ** (-2 * order + 2))
