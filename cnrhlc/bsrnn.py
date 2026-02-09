@@ -27,8 +27,9 @@ class BSRNN(nn.Module):
         Number of base channels.
     layers : int, optional
         Number of layers.
-    subband_right_limits : list, optional
-        Right limit of each subband in Hz. If not provided, the subbands are defined as in [3].
+    subband_right_limits : list or str, optional
+        Right limit of each subband in Hz. If not provided, the subbands are defined as in [3]. Can also be a string of
+        the form ``"mel<num_bands>"``, in which case ``num_bands`` subbands equally spaced on a mel scale are used.
     emb_dim : int, optional
         Dimension of the external embedding vector.
     real_mask : bool, optional
@@ -89,17 +90,8 @@ class BSRNN(nn.Module):
         if emb_dim is None:
             self.emb_layer = None
         else:
-            self.emb_layer = nn.Sequential(
-                nn.Linear(emb_dim, 2 * len(subbands) * base_channels),
-                nn.Tanh(),
-            )
-        self.separator = _Separator(
-            subbands,
-            base_channels,
-            len(reference_channels),
-            real_mask,
-            residual_spectrogram,
-        )
+            self.emb_layer = nn.Sequential(nn.Linear(emb_dim, 2 * len(subbands) * base_channels), nn.Tanh())
+        self.separator = _Separator(subbands, base_channels, len(reference_channels), real_mask, residual_spectrogram)
         self.reference_channels = reference_channels
         if connection_type not in ["skip", "residual"]:
             raise ValueError(f"connection_type must be 'skip' or 'residual', got {connection_type}")
@@ -223,12 +215,7 @@ class _RNNBlock(nn.Module):
     def __init__(self, input_channels, hidden_channels):
         super().__init__()
         self.norm = nn.GroupNorm(1, input_channels)
-        self.lstm = nn.LSTM(
-            input_channels,
-            hidden_channels,
-            batch_first=True,
-            bidirectional=True,
-        )
+        self.lstm = nn.LSTM(input_channels, hidden_channels, batch_first=True, bidirectional=True)
         self.fc = nn.Linear(2 * hidden_channels, input_channels)
 
     def forward(self, x):
@@ -260,14 +247,7 @@ class _MLP(nn.Module):
 
 
 class _Separator(nn.Module):
-    def __init__(
-        self,
-        subbands,
-        input_channels,
-        output_channels,
-        real_mask,
-        residual_spectrogram,
-    ):
+    def __init__(self, subbands, input_channels, output_channels, real_mask, residual_spectrogram):
         super().__init__()
         self.output_channels = output_channels
         self.mlp_mask = nn.ModuleList(

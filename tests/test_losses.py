@@ -19,9 +19,7 @@ def test_loss(torch_rng, loss):
     inputs = [torch.randn(CHANNELS, length, generator=torch_rng) for length in lengths]
 
     # pad inputs and make batch
-    batched_inputs = torch.stack(
-        [F.pad(x, (0, MAX_LENGTH - x.shape[-1])) for x in inputs]
-    )
+    batched_inputs = torch.stack([F.pad(x, (0, MAX_LENGTH - x.shape[-1])) for x in inputs])
 
     # mimic neural net processing
     def dummy_net_func(x):
@@ -34,9 +32,7 @@ def test_loss(torch_rng, loss):
     targets = [torch.randn(CHANNELS, length, generator=torch_rng) for length in lengths]
 
     # pad targets and make batch
-    batched_targets = torch.stack(
-        [F.pad(x, (0, MAX_LENGTH - x.shape[-1])) for x in targets]
-    )
+    batched_targets = torch.stack([F.pad(x, (0, MAX_LENGTH - x.shape[-1])) for x in targets])
 
     # init loss
     loss_cls = LossRegistry.get(loss)

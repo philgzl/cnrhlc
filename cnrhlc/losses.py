@@ -186,14 +186,7 @@ class AuditoryLoss(BaseLoss):
 
     """
 
-    def __init__(
-        self,
-        am_kw=None,
-        am_kw_hi=None,
-        am_kw_nh=None,
-        loss="mse",
-        loss_kw=None,
-    ):
+    def __init__(self, am_kw=None, am_kw_hi=None, am_kw_nh=None, loss="mse", loss_kw=None):
         super().__init__()
         self.am_hi = AuditoryModel(**(am_kw_hi or am_kw or {}))
         self.am_nh = AuditoryModel(**(am_kw_nh or am_kw or {}))
@@ -228,15 +221,7 @@ class ControllableNoiseReductionHearingLossCompensationLoss(BaseLoss):
 
     """
 
-    def __init__(
-        self,
-        am_kw=None,
-        am_kw_hi=None,
-        am_kw_nh=None,
-        loss="mse",
-        loss_kw=None,
-        nh_denoising=True,
-    ):
+    def __init__(self, am_kw=None, am_kw_hi=None, am_kw_nh=None, loss="mse", loss_kw=None, nh_denoising=True):
         super().__init__()
         self.am_hi = AuditoryModel(**(am_kw_hi or am_kw or {}))
         self.am_nh = AuditoryModel(**(am_kw_nh or am_kw or {}))

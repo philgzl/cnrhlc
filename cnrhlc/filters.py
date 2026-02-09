@@ -149,24 +149,9 @@ def middle_ear_filter(fs, order=512, min_phase=True):
         data = data[data[:, 0] < fs / 2, :]
     else:
         i = np.arange(1, 1 + (fs / 2 - data[-1, 0]) // 1000).reshape(-1, 1)
-        data = np.vstack(
-            [
-                data,
-                np.hstack(
-                    [
-                        data[-1, 0] + i * 1000,
-                        data[-1, 1] / 1.1**i,
-                    ]
-                ),
-            ]
-        )
+        data = np.vstack([data, np.hstack([data[-1, 0] + i * 1000, data[-1, 1] / 1.1**i])])
     if data[-1, 0] != fs / 2:
-        data = np.vstack(
-            [
-                data,
-                np.array([[fs / 2, data[-1, 1] / (1 + (fs / 2 - data[-1, 0]) * 1e-4)]]),
-            ]
-        )
+        data = np.vstack([data, np.array([[fs / 2, data[-1, 1] / (1 + (fs / 2 - data[-1, 0]) * 1e-4)]])])
     data = np.vstack([np.array([0, 0]), data * np.array([[2 / fs, 1]])])
     b = fir2(order, data[:, 0], data[:, 1])
     b = b / 20e-6
@@ -260,8 +245,8 @@ def matched_z_transform(poles, zeros=None, fs=1.0, gain=None, f0db=None, complex
         raise ValueError("poles and zeros must have the same shape along first axis")
 
     z_poles = np.exp(poles / fs)
-    # _z_zeros is used for hard-setting the Z-domain zeros which is useful for the
-    # amt_classic and amt_allpole gammatone filters. It should not be used in general!
+    # _z_zeros is used for hard-setting the Z-domain zeros which is useful for the amt_classic and amt_allpole gammatone
+    # filters. It should not be used in general!
     z_zeros = np.exp(zeros / fs) if _z_zeros is None else _z_zeros
 
     # TODO: find a way to vectorize P.polyfromroots instead of lopping over b and a
@@ -276,8 +261,8 @@ def matched_z_transform(poles, zeros=None, fs=1.0, gain=None, f0db=None, complex
     if gain is not None and f0db is not None:
         raise ValueError("cannot specify both gain and f0db")
     elif gain is not None:
-        # _z_zeros cannot be used together with s-domain gain since calculating the
-        # corresponding Z-domain gain requires the initial s-domain zeros.
+        # _z_zeros cannot be used together with s-domain gain since calculating the corresponding Z-domain gain requires
+        # the initial s-domain zeros.
         if _z_zeros is not None:
             raise ValueError("cannot specify both gain and _z_zeros")
         gain, _ = _check_0d_or_1d(gain)
@@ -401,10 +386,7 @@ def gammatone(
             zeros = np.zeros((len(fc), order))
             for i in range(len(fc)):
                 zeros[i, :] = P.polyroots(
-                    P.polyadd(
-                        P.polypow([-pole[i], 1], order),
-                        P.polypow([-pole[i].conj(), 1], order),
-                    )
+                    P.polyadd(P.polypow([-pole[i], 1], order), P.polypow([-pole[i].conj(), 1], order))
                 ).real
         elif filter_type == "apgf":
             pass
@@ -427,14 +409,7 @@ def gammatone(
                 "filter_type='fir' or iir_output='sos' instead."
             )
             poles = np.tile(poles, (1, order))
-            b, a = matched_z_transform(
-                poles,
-                zeros,
-                fs=fs,
-                f0db=fc,
-                complex=complex,
-                _z_zeros=_z_zeros,
-            )
+            b, a = matched_z_transform(poles, zeros, fs=fs, f0db=fc, complex=complex, _z_zeros=_z_zeros)
             if filter_type == "amt_allpole":
                 b = b[:, :1]
             outputs = b, a
@@ -893,33 +868,21 @@ class DRNLFilterbank(nn.Module):
             dirac = impulse(fir_ntaps, dtype=dtype)
             # FIR of linear path lowpass filter (applied ``lin_nlp`` times)
             lin_lp_fir = dirac.clone()
-            _lin_lpf_iir = IIRFilterbank(
-                *butter(2, lin_lp_cutoff / (fs / 2)),
-                dtype=dtype,
-            )
+            _lin_lpf_iir = IIRFilterbank(*butter(2, lin_lp_cutoff / (fs / 2)), dtype=dtype)
             for itr in range(lin_nlp):
                 lin_lp_fir = _lin_lpf_iir(lin_lp_fir, batching=itr > 0)
             lin_nlp = 1
             self.lpf_lin = FIRFilterbank(lin_lp_fir)
             # FIR of nonlinear path lowpass filter (applied ``nlin_nlp`` times)
             nlin_lp_fir = dirac.clone()
-            _nlin_lpf_iir = IIRFilterbank(
-                *butter(2, nlin_lp_cutoff / (fs / 2)),
-                dtype=dtype,
-            )
+            _nlin_lpf_iir = IIRFilterbank(*butter(2, nlin_lp_cutoff / (fs / 2)), dtype=dtype)
             for itr in range(nlin_nlp):
                 nlin_lp_fir = _nlin_lpf_iir(nlin_lp_fir, batching=itr > 0)
             nlin_nlp = 1
             self.lpf_nlin = FIRFilterbank(nlin_lp_fir)
         else:
-            self.lpf_lin = IIRFilterbank(
-                *butter(2, lin_lp_cutoff / (fs / 2)),
-                dtype=dtype,
-            )
-            self.lpf_nlin = IIRFilterbank(
-                *butter(2, nlin_lp_cutoff / (fs / 2)),
-                dtype=dtype,
-            )
+            self.lpf_lin = IIRFilterbank(*butter(2, lin_lp_cutoff / (fs / 2)), dtype=dtype)
+            self.lpf_nlin = IIRFilterbank(*butter(2, nlin_lp_cutoff / (fs / 2)), dtype=dtype)
 
         self.register_buffer("fc", torch.tensor(fc, dtype=dtype))
         self.register_buffer("lin_gain", torch.tensor(lin_gain, dtype=dtype))
@@ -931,10 +894,7 @@ class DRNLFilterbank(nn.Module):
         self.register_buffer("nlin_nlp", torch.tensor(nlin_nlp))
 
         if middle_ear:
-            self.middle_ear_filter = FIRFilterbank(
-                middle_ear_filter(fs),
-                dtype=dtype,
-            )
+            self.middle_ear_filter = FIRFilterbank(middle_ear_filter(fs), dtype=dtype)
         else:
             self.middle_ear_filter = None
 
@@ -1075,13 +1035,7 @@ def data_lopezpoveda2001():
             [10000, 6.000e-10],
         ]
     )
-    return np.vstack(
-        [
-            extrp[extrp[:, 0] < data[0, 0]],
-            data,
-            extrp[extrp[:, 0] > data[-1, 0]],
-        ]
-    )
+    return np.vstack([extrp[extrp[:, 0] < data[0, 0]], data, extrp[extrp[:, 0] > data[-1, 0]]])
 
 
 def _check_1d_or_2d(x, name="input"):

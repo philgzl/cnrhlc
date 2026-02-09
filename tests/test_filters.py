@@ -69,16 +69,8 @@ def test_middle_ear_filter(matlab_engine, fs):
 @pytest.mark.parametrize("filter_type", ["classic", "allpole"])
 def test_gammatone(matlab_engine, fc, fs, order, filter_type):
     matlab = pytest.importorskip("matlab")
-    b_python, a_python = gammatone(
-        fc,
-        fs,
-        order=order,
-        filter_type=f"amt_{filter_type}",
-        iir_output="ba",
-    )
-    b_matlab, a_matlab = matlab_engine.gammatone(
-        matlab.double(fc), fs, float(order), filter_type, nargout=2
-    )
+    b_python, a_python = gammatone(fc, fs, order=order, filter_type=f"amt_{filter_type}", iir_output="ba")
+    b_matlab, a_matlab = matlab_engine.gammatone(matlab.double(fc), fs, float(order), filter_type, nargout=2)
     b_python = b_python.reshape(-1, b_python.shape[-1])
     a_python = a_python.reshape(-1, a_python.shape[-1])
     b_matlab = np.array(b_matlab)
@@ -210,10 +202,7 @@ def test_drnl_filterbank(matlab_engine, impulse_length, fs, precision):
 @pytest.mark.parametrize("f_min", [100])
 @pytest.mark.parametrize("f_max", [10000])
 @pytest.mark.parametrize("impulse_length", [1.0])
-@pytest.mark.parametrize(
-    "filter_type",
-    ["fir", "gtf", "apgf", "ozgf", "hohmann", "amt_classic", "amt_allpole"],
-)
+@pytest.mark.parametrize("filter_type", ["fir", "gtf", "apgf", "ozgf", "hohmann", "amt_classic", "amt_allpole"])
 @pytest.mark.parametrize("iir_output", ["ba", "sos"])
 @pytest.mark.parametrize("precision", ["single", "double"])
 def test_gtfb(fs, f_min, f_max, impulse_length, filter_type, iir_output, precision):
@@ -222,12 +211,7 @@ def test_gtfb(fs, f_min, f_max, impulse_length, filter_type, iir_output, precisi
     is_unstable = iir_output == "ba" and filter_type != "fir"
     with pytest.warns(UserWarning) if is_unstable else nullcontext():
         fb = GammatoneFilterbank(
-            fs=fs,
-            f_min=f_min,
-            f_max=f_max,
-            filter_type=filter_type,
-            iir_output=iir_output,
-            precision=precision,
+            fs=fs, f_min=f_min, f_max=f_max, filter_type=filter_type, iir_output=iir_output, precision=precision
         )
     with pytest.raises(ValueError) if filter_type == "hohmann" else nullcontext():
         y = fb(x)

@@ -164,13 +164,7 @@ class HalfwaveRectificationLowpassIHC(nn.Module):
 
     """
 
-    def __init__(
-        self,
-        fc=1000,
-        fs=20000,
-        order=2,
-        dtype=torch.float32,
-    ):
+    def __init__(self, fc=1000, fs=20000, order=2, dtype=torch.float32):
         super().__init__()
         b, a = butter(order, 2 * fc / fs)
         self.lp = IIRFilterbank(b, a, dtype=dtype)
